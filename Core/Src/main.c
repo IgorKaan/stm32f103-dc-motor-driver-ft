@@ -89,7 +89,7 @@ uint8_t encoder_speed;
 uint16_t pwm;
 uint16_t dc_driver_pwm = 0;
 
-uint32_t encoder_ratio = 555;
+uint32_t encoder_ratio = 861;
 uint32_t header_id = 0x3A;
 uint32_t filter_id = 0x3F;
 uint32_t input_capture = 0;
@@ -145,21 +145,15 @@ void StartTask03(void *argument);
 float calculate_pwm( float target_speed, float current_speed )
 {
 	float error = target_speed - current_speed;
-
 	float Pout = _Kp * error;
-
 	float derivative = (error - _pre_error) / _dt;
 	float Dout = _Kd * derivative;
-
 	float output = Pout + Dout;
-
     if( output > _max )
         output = _max;
     else if( output < _min )
         output = _min;
-
     _pre_error = error;
-
     return output;
 }
 
@@ -178,7 +172,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -530,11 +524,15 @@ void reduce_speed_ccw() {
 	can_tx_side = 1;
 	float inc = calculate_pwm(0, (float)encoder_speed);
 	u_pwm += inc;
+	//TIM2->CCR4 -= 1;
+	pwm = TIM2->CCR4;
 	if( u_pwm > _Max )
 		u_pwm = _Max;
 	else if( u_pwm < _Min )
 		u_pwm = _Min;
 	dc_driver_pwm = u_pwm;
+	//for (int i = 0; i<50000; ++i) {__NOP();}
+	//HAL_Delay(10);
 	TIM2->CCR4 = (uint16_t)dc_driver_pwm;
 }
 
@@ -544,11 +542,15 @@ void reduce_speed_cw() {
 	can_tx_side = 2;
 	float inc = calculate_pwm(0, (float)encoder_speed);
 	u_pwm += inc;
+	//TIM2->CCR4 -= 1;
+	pwm = TIM2->CCR4;
 	if( u_pwm > _Max )
 		u_pwm = _Max;
 	else if( u_pwm < _Min )
 		u_pwm = _Min;
 	dc_driver_pwm = u_pwm;
+	//for (int i = 0; i<50000; ++i) {__NOP();}
+	//HAL_Delay(10);
 	TIM2->CCR4 = (uint16_t)dc_driver_pwm;
 }
 
@@ -556,8 +558,8 @@ void stop_movement(void)
 {
 	HAL_GPIO_WritePin(GPIOB,GPIO_PIN_8,GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,GPIO_PIN_RESET);
-	TIM2->CCR4 = 0;
-	u_pwm = 0;
+	TIM2->CCR4 = 200;
+	u_pwm = 200;
 }
 /* USER CODE END 4 */
 
@@ -580,12 +582,15 @@ void StartDefaultTask(void *argument)
 		current_st = 1;
 	}
 	else if ((can_rx_side == 0)&&(status == State_CCW)) {
-		while (encoder_speed != 0) {
-			reduce_speed_ccw();
-		}
-		stop_movement();
 		current_st = 2;
-		status = State_CW;
+		//while (encoder_speed != 0) {
+			//while (TIM2->CCR4 > 50) {
+			reduce_speed_ccw();
+		//}
+		if (encoder_speed <= 5) {
+			stop_movement();
+			status = State_CW;
+		}
 	}
 	else if ((can_rx_side == 0)&&(status == State_CW)) {
 		rotate_cw(can_rx_speed);
@@ -593,17 +598,21 @@ void StartDefaultTask(void *argument)
 		status = State_CW;
 	}
 	else if ((can_rx_side == 1)&&(status == State_CW)) {
-		while (encoder_speed != 0) {
-			reduce_speed_cw();
-		}
-		stop_movement();
 		current_st = 4;
-		status = State_CCW;
+		//while (encoder_speed != 0) {
+		//while (TIM2->CCR4 > 50) {
+			reduce_speed_cw();
+		//}
+		if (encoder_speed <= 5) {
+			stop_movement();
+			status = State_CCW;
+		}
 	}
 	else if (can_rx_speed == 0) {
 		current_st = 5;
 		stop_movement();
 	}
+//	  rotate_ccw(60);
     osDelay(20);
   }
   /* USER CODE END 5 */
