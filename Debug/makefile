@@ -65,8 +65,8 @@ stm32-f103-dc-driver-ft.bin \
 all: stm32-f103-dc-driver-ft.elf secondary-outputs
 
 # Tool invocations
-stm32-f103-dc-driver-ft.elf: $(OBJS) $(USER_OBJS) /home/igor/STM32CubeIDE/workspace_1.3.0/stm32-f103-dc-driver-ft/STM32F103C8TX_FLASH.ld
-	arm-none-eabi-g++ -o "stm32-f103-dc-driver-ft.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"/home/igor/STM32CubeIDE/workspace_1.3.0/stm32-f103-dc-driver-ft/STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32-f103-dc-driver-ft.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+stm32-f103-dc-driver-ft.elf: $(OBJS) $(USER_OBJS) /home/igor/Downloads/stm32f103-dc-motor-driver-ft-master/STM32F103C8TX_FLASH.ld
+	arm-none-eabi-g++ -o "stm32-f103-dc-driver-ft.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"/home/igor/Downloads/stm32f103-dc-motor-driver-ft-master/STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32-f103-dc-driver-ft.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

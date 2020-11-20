@@ -115,6 +115,11 @@ float u_pwm = 0;
 float u_pwm_right = 0;
 float u_pwm_left = 0;
 
+struct a {
+	int a;
+	int b;
+};
+
 enum States
 {
 	State_Start,
@@ -671,6 +676,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM4) {
+	sys_tick++;
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
